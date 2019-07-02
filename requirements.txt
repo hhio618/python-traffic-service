@@ -1,0 +1,9 @@
+numpy
+scipy
+gensim
+lxml
+flask
+gunicorn
+uwsgi
+keras
+git+https://github.com/keras-team/keras-contrib
