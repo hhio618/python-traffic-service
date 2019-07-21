@@ -1,16 +1,25 @@
-import googlemaps
-from datetime import datetime
+from sklearn.cluster import KMeans
+import matplotlib.pyplot as plt
+import numpy as np
+import cv2
+from collections import Counter
+from skimage.color import rgb2lab, deltaE_cie76
+import os
 
-gmaps = googlemaps.Client(key='YOUR KEY')
 
+gui_env = ['TKAgg', 'GTKAgg', 'Qt4Agg', 'WXAgg']
+for gui in gui_env:
+    try:
+        print("Testing matplotlib backend...", gui)
+        matplotlib.use(gui, warn=False, force=True)
+        matplotlib.interactive(False)
+        from matplotlib import pyplot as plt
 
-now = datetime.now()
-directions_result = gmaps.directions("18.997739, 72.841280",
-                                     "18.880253, 72.945137",
-                                     mode="driving",
-                                     avoid="ferries",
-                                     departure_time=now
-                                    )
+        break
+    except Exception as e:
+        continue
 
-print(directions_result[0]['legs'][0]['distance']['text'])
-print(directions_result[0]['legs'][0]['duration']['text'])
+image = cv2.imread('map.png')
+print("The type of this input is {}".format(type(image)))
+print("Shape: {}".format(image.shape))
+plt.imshow(image)
