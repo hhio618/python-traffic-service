@@ -10,11 +10,15 @@ import os
 
 # 4 first color are traffic related (from fastest to slowest) + gray bg + water color + landscape(man made) + landscape(nature) + road color + road margin
 colors = ["84ca50", "f07d02", "e60000", "9e1313", "ededee", "aadaff" , "c0ecae", "c3ecb1", "fff0ac", "f7d36e"]
-
+legends = ["fastest", "fast", "slow", "slowest", "bg", "water", "land_man", "land_nature", "road", "road_margin"]
 def get_image(image_path):
     image = cv2.imread(image_path)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2Lab)
     return image
+
+def HEX2LABEL(color):
+   chex = "{:02x}{:02x}{:02x}".format(int(color[0]), int(color[1]), int(color[2]))
+   return legends(colors.index(chex))
 
 def RGB2HEX(color):
    return "#{:02x}{:02x}{:02x}".format(int(color[0]), int(color[1]), int(color[2]))
@@ -49,7 +53,7 @@ def get_colors(image, number_of_colors, show_chart):
     center_colors = clf.cluster_centers_
     # We get ordered colors by iterating through the keys
     ordered_colors = [center_colors[i] for i in counts.keys()]
-    hex_colors = [RGB2HEX(ordered_colors[i]) for i in counts.keys()]
+    hex_colors = [HEX2LABEL(ordered_colors[i]) for i in counts.keys()]
     rgb_colors = [ordered_colors[i] for i in counts.keys()]
 
     if (show_chart):
