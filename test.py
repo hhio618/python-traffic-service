@@ -8,6 +8,8 @@ from colormath.color_objects import XYZColor, sRGBColor,LabColor
 from colormath.color_conversions import convert_color
 import os
 import math
+from glob import glob
+from scipy.spatial.distance import cdist
 
 # 4 first color are traffic related (from fastest to slowest) + gray bg + water color + landscape(man made) + landscape(nature) + road color + road margin
 colors = ["84ca50", "f07d02", "e60000", "9e1313", "ededee", "aadaff" , "c0ecae", "c3ecb1", "fff0ac", "f7d36e"]
@@ -18,7 +20,7 @@ def get_image(image_path):
     return image
 
 def HEX2LABEL(color):
-   return legends(colors.index(color))
+   return legends[colors.index(color)]
 
 def RGB2HEX(color):
    return "#{:02x}{:02x}{:02x}".format(int(color[0]), int(color[1]), int(color[2]))
@@ -39,22 +41,10 @@ def HEX2LAB(h):
     
 
 def closest_node(X, C):
-   counts = {c:0 for c in range(C.shape[0])}
-   y = []
-   n = X.shape[0]
-   for i in range(n):
-      lowest_dist = 1000000
-      best_c = 0
-      for j in range(C.shape[0]):
-         dist = np.linalg.norm(X[i]-C[j])
-         if dist < lowest_dist:
-            best_c = j
-            lowest_dist = dist
-      # print(lowest_dist)
-      counts[best_c] = counts[best_c] +1
-      y.append(best_c)
-      if i%(n/10) == 0:
-         print("%d percent is done" %  (i*100/n))
+   counts_init = {c:0 for c in range(C.shape[0])}
+   y= np.argmin(((X[:, :, None] - C.T[None, :, :])**2).sum(axis=1), axis=1)
+   counts = Counter(y)
+   counts = {**counts_init, **counts}
    return counts, np.asarray(y)
 
 
@@ -72,13 +62,15 @@ def get_colors(image, number_of_colors, show_chart, image_name):
 
     center_colors = C
     # We get ordered colors by iterating through the keys
-    hex_colors = [HEX2LABEL(c) for c in colors]
+    hex_colors = ["#%s"%c for c in colors]
+    labels = [HEX2LABEL(c) for c in colors]
     rgb_colors = [HEX2RGB(c) for c in colors]
 
     if (show_chart):
         fig = plt.figure(figsize = (8, 6))
-        plt.pie(counts.values(), labels = hex_colors, colors = hex_colors)
+        plt.pie(counts.values(), labels = labels, colors = hex_colors)
         fig.savefig(image_name)
+        fig.clf()
 
     return rgb_colors
 
@@ -95,8 +87,9 @@ def test():
 # im = get_image("map.png")
 # plt.imshow(im)
 # plt.show()
-# for i in range(1,6):
-#     get_colors(get_image("map%d.png"%i), 10, True, "pie%d.png" %i)
-i = 6
-get_colors(get_image("map%d.png"%i), 10, True, "pie%d.png" %i)
+for png in glob("testdata/*"):
+   if "pie" in png:
+      continue
+   pie_fn = png.rstrip(".png")+"-pie.png"
+   get_colors(get_image(png), 10, True, pie_fn)
 # test()
